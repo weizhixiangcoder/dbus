@@ -351,13 +351,14 @@ func (conn *Conn) getSerial() uint32 {
 // Hello sends the initial org.freedesktop.DBus.Hello call. This method must be
 // called after authentication, but before sending any other messages to the
 // bus. Hello must not be called for shared connections.
+// 注册独一无二的服务名称
 func (conn *Conn) Hello() error {
 	var s string
 	err := conn.busObj.Call("org.freedesktop.DBus.Hello", 0).Store(&s)
 	if err != nil {
 		return err
 	}
-	conn.names.acquireUniqueConnectionName(s)
+	conn.names.acquireUniqueConnectionName(s)   // 应该是返回的独一无二的数字地址
 	return nil
 }
 
@@ -787,6 +788,7 @@ func (gen *serialGenerator) RetireSerial(serial uint32) {
 	delete(gen.serialUsed, serial)
 }
 
+// 管理dbus服务名称
 type nameTracker struct {
 	lck    sync.RWMutex
 	unique string
