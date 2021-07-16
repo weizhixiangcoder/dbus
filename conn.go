@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	//全局唯一systemBus  sessionBus
 	systemBus     *Conn
 	systemBusLck  sync.Mutex
 	sessionBus    *Conn
@@ -36,7 +37,7 @@ type Conn struct {
 	closeOnce sync.Once
 	closeErr  error
 
-	busObj BusObject
+	busObj BusObject    // 根据服务名和路径创建object
 	unixFD bool
 	uuid   string
 

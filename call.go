@@ -7,6 +7,7 @@ import (
 
 var errSignature = errors.New("dbus: mismatched signature")
 
+// 等接口调用完成
 // Call represents a pending or completed method call.
 type Call struct {
 	Destination string
@@ -14,6 +15,7 @@ type Call struct {
 	Method      string
 	Args        []interface{}
 
+	// 标记结束
 	// Strobes when the call is complete.
 	Done chan *Call
 
@@ -21,6 +23,7 @@ type Call struct {
 	// error message from the peer (with Error as its type) or some other error.
 	Err error
 
+	// 返回调用信息
 	// Holds the response once the call is done.
 	Body []interface{}
 

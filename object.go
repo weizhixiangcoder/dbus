@@ -8,6 +8,7 @@ import (
 
 // BusObject is the interface of a remote object on which methods can be
 // invoked.
+// 抽象基类
 type BusObject interface {
 	Call(method string, flags Flags, args ...interface{}) *Call
 	CallWithContext(ctx context.Context, method string, flags Flags, args ...interface{}) *Call
@@ -22,15 +23,17 @@ type BusObject interface {
 	Path() ObjectPath
 }
 
+// Object 子类
 // Object represents a remote object on which methods can be invoked.
 type Object struct {
-	conn *Conn
-	dest string
-	path ObjectPath
+	conn *Conn		// session或system
+	dest string		// dbus服务名
+	path ObjectPath	// dbus路径
 }
 
 // Call calls a method with (*Object).Go and waits for its reply.
 func (o *Object) Call(method string, flags Flags, args ...interface{}) *Call {
+	// 等接口调用返回Call, Call中Body包含返回信息, Err 包含错误信息  Store可以将返回值赋值给入参
 	return <-o.createCall(context.Background(), method, flags, make(chan *Call, 1), args...).Done
 }
 
@@ -98,6 +101,7 @@ func (o *Object) GoWithContext(ctx context.Context, method string, flags Flags, 
 	return o.createCall(ctx, method, flags, ch, args...)
 }
 
+// 创建回调函数
 func (o *Object) createCall(ctx context.Context, method string, flags Flags, ch chan *Call, args ...interface{}) *Call {
 	if ctx == nil {
 		panic("nil context")
