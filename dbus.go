@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	byteType        = reflect.TypeOf(byte(0))
+	byteType        = reflect.TypeOf(byte(0)) 	// reflect.TypeOf 使用非接口类型创建reflect包的Type类型
 	boolType        = reflect.TypeOf(false)
 	uint8Type       = reflect.TypeOf(uint8(0))
 	int16Type       = reflect.TypeOf(int16(0))

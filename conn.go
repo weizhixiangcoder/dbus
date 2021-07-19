@@ -52,7 +52,7 @@ type Conn struct {
 	calls      *callTracker
 	outHandler *outputHandler
 
-	eavesdropped    chan<- *Message
+	eavesdropped    chan<- *Message  	//窃听通道
 	eavesdroppedLck sync.Mutex
 }
 
@@ -358,7 +358,7 @@ func (conn *Conn) Hello() error {
 	if err != nil {
 		return err
 	}
-	conn.names.acquireUniqueConnectionName(s)   // 应该是返回的独一无二的数字地址
+	conn.names.acquireUniqueConnectionName(s)   // 应该是返回的独一无二的数字地址 冒号开头
 	return nil
 }
 
@@ -387,7 +387,7 @@ func (conn *Conn) inWorker() {
 			default:
 			}
 			conn.eavesdroppedLck.Unlock()
-			continue
+			continue			// 数据被监听不再被发送给注册Signal的通道
 		}
 		conn.eavesdroppedLck.Unlock()
 		dest, _ := msg.Headers[FieldDestination].value.(string)
@@ -397,6 +397,7 @@ func (conn *Conn) inWorker() {
 		if !found {
 			// Eavesdropped a message, but no channel for it is registered.
 			// Ignore it.
+			// 没有注册监听， 忽略所有DBus数据
 			continue
 		}
 
@@ -432,8 +433,8 @@ func (conn *Conn) handleSignal(sequence Sequence, msg *Message) {
 			if !ok {
 				panic("Unable to read the lost name")
 			}
-			conn.names.loseName(name)
-		} else if member == "NameAcquired" {
+			conn.names.loseName(name)  //服务名称改变，将该服务名称从监听的服务中删除
+		} else if member == "NameAcquired" {		// 注册新服务，将该服务追加到监听列表中
 			// If we acquired the name on the bus, add it to our
 			// tracking list.
 			name, ok := msg.Body[0].(string)
@@ -587,6 +588,7 @@ func (conn *Conn) sendReply(dest string, serial uint32, values ...interface{}) {
 
 // AddMatchSignal registers the given match rule to receive broadcast
 // signals based on their contents.
+// 订阅发布机制，此处订阅执行信号
 func (conn *Conn) AddMatchSignal(options ...MatchOption) error {
 	options = append([]MatchOption{withMatchType("signal")}, options...)
 	return conn.busObj.Call(
@@ -596,6 +598,7 @@ func (conn *Conn) AddMatchSignal(options ...MatchOption) error {
 }
 
 // RemoveMatchSignal removes the first rule that matches previously registered with AddMatchSignal.
+//移除订阅
 func (conn *Conn) RemoveMatchSignal(options ...MatchOption) error {
 	options = append([]MatchOption{withMatchType("signal")}, options...)
 	return conn.busObj.Call(
@@ -798,6 +801,7 @@ type nameTracker struct {
 func newNameTracker() *nameTracker {
 	return &nameTracker{names: map[string]struct{}{}}
 }
+//唯一名称  以冒号开头的服务名称
 func (tracker *nameTracker) acquireUniqueConnectionName(name string) {
 	tracker.lck.Lock()
 	defer tracker.lck.Unlock()

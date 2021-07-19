@@ -103,6 +103,7 @@ var requiredFields = [typeMax][]HeaderField{
 	TypeSignal:      {FieldPath, FieldInterface, FieldMember},
 }
 
+// DBus通知消息
 // Message represents a single D-Bus message.
 type Message struct {
 	Type

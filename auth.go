@@ -36,6 +36,7 @@ const (
 )
 
 // Auth defines the behaviour of an authentication mechanism.
+// 认证机制的认证行为
 type Auth interface {
 	// Return the name of the mechnism, the argument to the first AUTH command
 	// and the next status.
